@@ -20,4 +20,5 @@ public class StockMovement
     public int ReferenceId { get; set; }
 
     public DateTime MovementDateTime { get; set; } = DateTime.UtcNow;
+    
 }

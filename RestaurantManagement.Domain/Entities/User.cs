@@ -11,4 +11,8 @@ public class User
     public Role Role { get; set; } = null!;
 
     public bool IsActive { get; set; } = true;
+    public ICollection<Sale> SalesCreated { get; set; } = new List<Sale>();
+    public ICollection<IngredientBatch> CreatedBatches { get; set; } = new List<IngredientBatch>();
+    public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
+
 }

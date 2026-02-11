@@ -10,4 +10,5 @@ public class Recipe
     public bool IsActive { get; set; } = true;
 
     public ICollection<RecipeItem> Items { get; set; } = new List<RecipeItem>();
+    public DateTime CreatedAt { get; set; }
 }

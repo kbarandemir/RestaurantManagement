@@ -11,4 +11,5 @@ public class SaleItem
     public MenuItem MenuItem { get; set; } = null!;
 
     public int Quantity { get; set; }
+    public decimal UnitPriceAtSale { get; set; }
 }
