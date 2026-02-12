@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using RestaurantManagement.Domain.Entities;
+using RestaurantManagement.Application.Interfaces;
 
 namespace RestaurantManagement.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IAppDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -65,6 +66,10 @@ public class AppDbContext : DbContext
         // -----------------------
         modelBuilder.Entity<RolePermission>()
             .HasKey(rp => new { rp.RoleId, rp.PermissionId });
+        modelBuilder.Entity<IngredientBatch>() 
+            .HasKey(p => p.BatchId);
+        modelBuilder.Entity<StockMovement>()
+            .HasKey(sm => sm.MovementId);
 
         // Optional: prevent cascading deletes in RBAC
         modelBuilder.Entity<User>()
@@ -215,6 +220,13 @@ public class AppDbContext : DbContext
             .WithMany(b => b.StockMovements)
             .HasForeignKey(sm => sm.BatchId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<StockMovement>()
+            .HasOne(sm => sm.CreatedByUser)
+            .WithMany(u => u.StockMovements)
+            .HasForeignKey(sm => sm.CreatedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
 
     }
 }

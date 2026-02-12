@@ -20,5 +20,7 @@ public class StockMovement
     public int ReferenceId { get; set; }
 
     public DateTime MovementDateTime { get; set; } = DateTime.UtcNow;
-    
+    public int? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
 }

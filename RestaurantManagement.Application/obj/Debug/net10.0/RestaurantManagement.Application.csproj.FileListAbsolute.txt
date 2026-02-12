@@ -13,3 +13,4 @@
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/refint/RestaurantManagement.Application.dll
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.pdb
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/ref/RestaurantManagement.Application.dll
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.sourcelink.json

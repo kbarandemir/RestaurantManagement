@@ -15,3 +15,6 @@
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Infrastructure/obj/Debug/net10.0/RestaurantManagement.Infrastructure.pdb
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Infrastructure/obj/Debug/net10.0/RestaurantManagement.Infrastructure.genruntimeconfig.cache
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Infrastructure/obj/Debug/net10.0/ref/RestaurantManagement.Infrastructure.dll
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Infrastructure/obj/Debug/net10.0/RestaurantManagement.Infrastructure.sourcelink.json
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Infrastructure/bin/Debug/net10.0/RestaurantManagement.Application.dll
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Infrastructure/bin/Debug/net10.0/RestaurantManagement.Application.pdb

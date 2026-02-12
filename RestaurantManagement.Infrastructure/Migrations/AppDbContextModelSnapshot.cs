@@ -17,7 +17,7 @@ namespace RestaurantManagement.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -54,10 +54,16 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchId"));
 
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("IngredientId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvoiceId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
@@ -76,26 +82,67 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
                     b.HasKey("BatchId");
 
+                    b.HasIndex("CreatedByUserId");
+
                     b.HasIndex("IngredientId");
+
+                    b.HasIndex("InvoiceId");
 
                     b.ToTable("IngredientBatches");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.InventoryRule", b =>
                 {
-                    b.Property<int>("IngredientId")
+                    b.Property<int>("InventoryRuleId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InventoryRuleId"));
+
                     b.Property<int>("ExpiryAlertDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IngredientId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("ReorderLevel")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
-                    b.HasKey("IngredientId");
+                    b.HasKey("InventoryRuleId");
+
+                    b.HasIndex("IngredientId")
+                        .IsUnique();
 
                     b.ToTable("InventoryRules");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.Invoice", b =>
+                {
+                    b.Property<int>("InvoiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoicePictureUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SupplierName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("InvoiceId");
+
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.MenuItem", b =>
@@ -106,12 +153,19 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MenuItemId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("MenuItemId");
 
@@ -125,6 +179,12 @@ namespace RestaurantManagement.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PermissionId"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModuleName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PermissionKey")
                         .IsRequired()
@@ -145,6 +205,9 @@ namespace RestaurantManagement.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecipeId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -229,10 +292,15 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SaleId"));
 
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("SaleDateTime")
                         .HasColumnType("datetime2");
 
                     b.HasKey("SaleId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.ToTable("Sales");
                 });
@@ -254,6 +322,10 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     b.Property<int>("SaleId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("UnitPriceAtSale")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
                     b.HasKey("SaleItemId");
 
                     b.HasIndex("MenuItemId");
@@ -272,6 +344,9 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MovementId"));
 
                     b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CreatedByUserId")
                         .HasColumnType("int");
 
                     b.Property<int>("IngredientId")
@@ -298,6 +373,8 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     b.HasKey("MovementId");
 
                     b.HasIndex("BatchId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("IngredientId");
 
@@ -342,13 +419,27 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.IngredientBatch", b =>
                 {
+                    b.HasOne("RestaurantManagement.Domain.Entities.User", "CreatedByUser")
+                        .WithMany("CreatedBatches")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("RestaurantManagement.Domain.Entities.Ingredient", "Ingredient")
-                        .WithMany()
+                        .WithMany("Batches")
                         .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("RestaurantManagement.Domain.Entities.Invoice", "Invoice")
+                        .WithMany("IngredientBatches")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("Ingredient");
+
+                    b.Navigation("Invoice");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.InventoryRule", b =>
@@ -356,7 +447,7 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     b.HasOne("RestaurantManagement.Domain.Entities.Ingredient", "Ingredient")
                         .WithOne("InventoryRule")
                         .HasForeignKey("RestaurantManagement.Domain.Entities.InventoryRule", "IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Ingredient");
@@ -365,9 +456,9 @@ namespace RestaurantManagement.Infrastructure.Migrations
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Recipe", b =>
                 {
                     b.HasOne("RestaurantManagement.Domain.Entities.MenuItem", "MenuItem")
-                        .WithMany()
+                        .WithMany("Recipes")
                         .HasForeignKey("MenuItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("MenuItem");
@@ -376,9 +467,9 @@ namespace RestaurantManagement.Infrastructure.Migrations
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.RecipeItem", b =>
                 {
                     b.HasOne("RestaurantManagement.Domain.Entities.Ingredient", "Ingredient")
-                        .WithMany()
+                        .WithMany("RecipeItems")
                         .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("RestaurantManagement.Domain.Entities.Recipe", "Recipe")
@@ -395,7 +486,7 @@ namespace RestaurantManagement.Infrastructure.Migrations
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.RolePermission", b =>
                 {
                     b.HasOne("RestaurantManagement.Domain.Entities.Permission", "Permission")
-                        .WithMany()
+                        .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -411,12 +502,22 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.Sale", b =>
+                {
+                    b.HasOne("RestaurantManagement.Domain.Entities.User", "CreatedByUser")
+                        .WithMany("SalesCreated")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CreatedByUser");
+                });
+
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.SaleItem", b =>
                 {
                     b.HasOne("RestaurantManagement.Domain.Entities.MenuItem", "MenuItem")
-                        .WithMany()
+                        .WithMany("SaleItems")
                         .HasForeignKey("MenuItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("RestaurantManagement.Domain.Entities.Sale", "Sale")
@@ -438,6 +539,11 @@ namespace RestaurantManagement.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("RestaurantManagement.Domain.Entities.User", "CreatedByUser")
+                        .WithMany("StockMovements")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("RestaurantManagement.Domain.Entities.Ingredient", "Ingredient")
                         .WithMany("StockMovements")
                         .HasForeignKey("IngredientId")
@@ -445,6 +551,8 @@ namespace RestaurantManagement.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Batch");
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Ingredient");
                 });
@@ -454,7 +562,7 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     b.HasOne("RestaurantManagement.Domain.Entities.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Role");
@@ -462,7 +570,11 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Ingredient", b =>
                 {
+                    b.Navigation("Batches");
+
                     b.Navigation("InventoryRule");
+
+                    b.Navigation("RecipeItems");
 
                     b.Navigation("StockMovements");
                 });
@@ -470,6 +582,23 @@ namespace RestaurantManagement.Infrastructure.Migrations
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.IngredientBatch", b =>
                 {
                     b.Navigation("StockMovements");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.Invoice", b =>
+                {
+                    b.Navigation("IngredientBatches");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.MenuItem", b =>
+                {
+                    b.Navigation("Recipes");
+
+                    b.Navigation("SaleItems");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Recipe", b =>
@@ -487,6 +616,15 @@ namespace RestaurantManagement.Infrastructure.Migrations
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Sale", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.User", b =>
+                {
+                    b.Navigation("CreatedBatches");
+
+                    b.Navigation("SalesCreated");
+
+                    b.Navigation("StockMovements");
                 });
 #pragma warning restore 612, 618
         }
