@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class RolesController : ControllerBase
 {
     private readonly IRoleService _service;
-    public RolesController(IRoleService service) => _service = service;
+    public RolesController(IRoleService service) {
+        _service = service;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct) => Ok(await _service.GetAllAsync(ct));

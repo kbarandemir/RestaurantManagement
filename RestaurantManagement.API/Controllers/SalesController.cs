@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class SalesController : ControllerBase
 {
     private readonly ISaleService _service;
-    public SalesController(ISaleService service) => _service = service;
+    public SalesController(ISaleService service) {
+        _service = service;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)

@@ -15,6 +15,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<Category> Categories => Set<Category>();
+
 
     // -----------------------
     // Menu / Recipe
@@ -226,6 +228,16 @@ public class AppDbContext : DbContext, IAppDbContext
             .WithMany(u => u.StockMovements)
             .HasForeignKey(sm => sm.CreatedByUserId)
             .OnDelete(DeleteBehavior.SetNull);
+        
+        // Category
+            modelBuilder.Entity<Category>()
+                .HasIndex(c => c.Name).IsUnique();
+
+            modelBuilder.Entity<MenuItem>()
+                .HasOne(mi => mi.Category)
+                .WithMany(c => c.MenuItems)
+                .HasForeignKey(mi => mi.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
     }

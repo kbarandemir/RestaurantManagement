@@ -8,9 +8,9 @@
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.AssemblyInfoInputs.cache
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.AssemblyInfo.cs
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.csproj.CoreCompileInputs.cache
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.sourcelink.json
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/Restaura.CE602A58.Up2Date
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.dll
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/refint/RestaurantManagement.Application.dll
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.pdb
 /Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/ref/RestaurantManagement.Application.dll
-/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Application/obj/Debug/net10.0/RestaurantManagement.Application.sourcelink.json

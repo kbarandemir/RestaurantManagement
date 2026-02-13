@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class PermissionsController : ControllerBase
 {
     private readonly IPermissionService _service;
-    public PermissionsController(IPermissionService service) => _service = service;
+    public PermissionsController(IPermissionService service) {
+        _service = service;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct) => Ok(await _service.GetAllAsync(ct));

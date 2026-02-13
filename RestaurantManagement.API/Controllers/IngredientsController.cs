@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Application.DTOs.Ingredients;
-using RestaurantManagement.Application.Services;
+using RestaurantManagement.Application.Interfaces;
 
 namespace RestaurantManagement.API.Controllers;
 
@@ -8,9 +8,9 @@ namespace RestaurantManagement.API.Controllers;
 [Route("api/[controller]")]
 public sealed class IngredientsController : ControllerBase
 {
-    private readonly IngredientService _service;
+    private readonly IIngredientService _service;
 
-    public IngredientsController(IngredientService service)
+    public IngredientsController(IIngredientService service)
     {
         _service = service;
     }

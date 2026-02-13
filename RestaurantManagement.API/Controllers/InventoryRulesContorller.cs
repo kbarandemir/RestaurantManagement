@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class InventoryRulesController : ControllerBase
 {
     private readonly IInventoryRuleService _service;
-    public InventoryRulesController(IInventoryRuleService service) => _service = service;
+    public InventoryRulesController(IInventoryRuleService service) {
+        _service = service;
+    } 
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct) => Ok(await _service.GetAllAsync(ct));

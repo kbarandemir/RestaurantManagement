@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class UsersController : ControllerBase
 {
     private readonly IUserService _service;
-    public UsersController(IUserService service) => _service = service;
+    public UsersController(IUserService service) {
+        _service = service;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false, CancellationToken ct = default)

@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class InvoicesController : ControllerBase
 {
     private readonly IInvoiceService _service;
-    public InvoicesController(IInvoiceService service) => _service = service;
+    public InvoicesController(IInvoiceService service) {
+        _service = service;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct) => Ok(await _service.GetAllAsync(ct));

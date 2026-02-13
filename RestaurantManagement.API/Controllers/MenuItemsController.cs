@@ -9,7 +9,9 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class MenuItemsController : ControllerBase
 {
     private readonly IMenuItemService _service;
-    public MenuItemsController(IMenuItemService service) => _service = service;
+    public MenuItemsController(IMenuItemService service) {
+        _service = service;
+    } 
 
     [HttpGet]
     public async Task<ActionResult<List<MenuItemListItemDto>>> GetAll([FromQuery] bool includeInactive = false, CancellationToken ct = default)

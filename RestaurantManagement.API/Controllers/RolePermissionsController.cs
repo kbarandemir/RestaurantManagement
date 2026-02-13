@@ -9,7 +9,10 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class RolePermissionsController : ControllerBase
 {
     private readonly IRolePermissionService _service;
-    public RolePermissionsController(IRolePermissionService service) => _service = service;
+    public RolePermissionsController(IRolePermissionService service)
+    {
+        _service = service;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetByRole(int roleId, CancellationToken ct)

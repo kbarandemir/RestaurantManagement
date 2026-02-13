@@ -4,6 +4,8 @@ public class MenuItem
 {
     public int MenuItemId { get; set; }
     public string Name { get; set; } = null!;
+    public int? CategoryId { get; set; }
+    public Category? Category { get; set; }
     public bool IsActive { get; set; } = true;
     public decimal Price { get; set; }
     public DateTime CreatedAt { get; set; }

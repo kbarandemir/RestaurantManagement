@@ -9,7 +9,10 @@ namespace RestaurantManagement.API.Controllers;
 public sealed class IngredientBatchesController : ControllerBase
 {
     private readonly IIngredientBatchService _service;
-    public IngredientBatchesController(IIngredientBatchService service) => _service = service;
+    public IngredientBatchesController(IIngredientBatchService service)
+    {
+        _service = service;
+    } 
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? ingredientId = null, [FromQuery] bool activeOnly = true, CancellationToken ct = default)
