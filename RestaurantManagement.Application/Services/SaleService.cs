@@ -45,7 +45,7 @@ public sealed class SaleService : ISaleService
         return new SaleDetailDto(sale.SaleId, sale.SaleDateTime, sale.CreatedByUserId, items);
     }
 
-    public async Task<int> CreateAsync(CreateSaleDto dto, CancellationToken ct = default)
+    public async Task<int> CreateSaleAsync(CreateSaleDto dto, CancellationToken ct = default)
     {
         if (dto.Items is null || dto.Items.Count == 0)
             throw new ArgumentException("Sale must contain at least one item.");
@@ -177,4 +177,6 @@ public sealed class SaleService : ISaleService
         await tx.CommitAsync(ct);
         return sale.SaleId;
     }
+
+
 }

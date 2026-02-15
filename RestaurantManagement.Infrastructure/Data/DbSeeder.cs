@@ -240,6 +240,94 @@ public static class DbSeeder
         }
 
         // -----------------------
+        // SEEDING RECIPES & STOCK FOR NEW ITEMS (Burger, Cola, etc.)
+        // -----------------------
+        // 1. Ensure Ingredients exist
+        var newIngredients = new[]
+        {
+            new { Name = "Burger Bun", Stock = 100m, UnitCost = 0.50m },
+            new { Name = "Burger Patty", Stock = 100m, UnitCost = 2.00m },
+            new { Name = "Tortilla", Stock = 100m, UnitCost = 0.30m },
+            new { Name = "Chicken Strip", Stock = 100m, UnitCost = 1.50m },
+            new { Name = "Frozen Fries", Stock = 5000m, UnitCost = 0.05m }, // grams
+            new { Name = "Cola Can", Stock = 200m, UnitCost = 0.80m },
+            new { Name = "Cheesecake Slice", Stock = 50m, UnitCost = 2.50m }
+        };
+
+        var ingMap = new Dictionary<string, int>();
+
+        foreach (var ni in newIngredients)
+        {
+            var ing = await db.Ingredients.FirstOrDefaultAsync(i => i.Name == ni.Name);
+            if (ing == null)
+            {
+                ing = new Ingredient { Name = ni.Name, BaseUnit = "Unit", IsActive = true };
+                db.Ingredients.Add(ing);
+                await db.SaveChangesAsync();
+
+                // Add Batch
+                db.IngredientBatches.Add(new IngredientBatch
+                {
+                    IngredientId = ing.IngredientId,
+                    QuantityOnHand = ni.Stock,
+                    UnitCost = ni.UnitCost,
+                    ReceivedDate = DateTime.UtcNow,
+                    ExpiryDate = DateTime.UtcNow.AddDays(30),
+                    IsActive = true,
+                    InvoiceId = null 
+                });
+                
+                // Add Rule
+                db.InventoryRules.Add(new InventoryRule
+                {
+                    IngredientId = ing.IngredientId,
+                    ReorderLevel = 10,
+                    ExpiryAlertDays = 7
+                });
+            }
+            ingMap[ni.Name] = ing.IngredientId;
+        }
+        await db.SaveChangesAsync();
+
+        // 2. Ensure Receipts exist for new Items
+        var menuRecipes = new[]
+        {
+            new { Menu = "Cheeseburger", Ings = new[] { ("Burger Bun", 1m), ("Burger Patty", 1m) } }, // + Cheese (param)
+            new { Menu = "Chicken Wrap", Ings = new[] { ("Tortilla", 1m), ("Chicken Strip", 2m) } },
+            new { Menu = "French Fries", Ings = new[] { ("Frozen Fries", 200m) } },
+            new { Menu = "Cola", Ings = new[] { ("Cola Can", 1m) } },
+            new { Menu = "Cheesecake", Ings = new[] { ("Cheesecake Slice", 1m) } }
+        };
+
+        foreach (var mr in menuRecipes)
+        {
+            var mItem = await db.MenuItems.FirstOrDefaultAsync(m => m.Name == mr.Menu);
+            if (mItem != null)
+            {
+                if (!await db.Recipes.AnyAsync(r => r.MenuItemId == mItem.MenuItemId && r.IsActive))
+                {
+                    var r = new Recipe { MenuItemId = mItem.MenuItemId, IsActive = true, CreatedAt = DateTime.UtcNow };
+                    db.Recipes.Add(r);
+                    await db.SaveChangesAsync();
+
+                    foreach (var (ingName, qty) in mr.Ings)
+                    {
+                        if (ingMap.TryGetValue(ingName, out int iId))
+                        {
+                            db.RecipeItems.Add(new RecipeItem { RecipeId = r.RecipeId, IngredientId = iId, QuantityPerUnit = qty });
+                        }
+                    }
+                    // Special case: Cheeseburger adds Cheese
+                    if (mr.Menu == "Cheeseburger")
+                    {
+                         db.RecipeItems.Add(new RecipeItem { RecipeId = r.RecipeId, IngredientId = cheeseId, QuantityPerUnit = 1m }); // 1 slice/unit
+                    }
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        // -----------------------
         // Invoice (optional)
         // -----------------------
         int invoiceId;

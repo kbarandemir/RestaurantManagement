@@ -10,4 +10,5 @@ public interface IMenuItemService
     Task<int> CreateAsync(CreateMenuItemDto dto, CancellationToken ct = default);
     Task<bool> UpdateAsync(int id, UpdateMenuItemDto dto, CancellationToken ct = default);
     Task<bool> DeactivateAsync(int id, CancellationToken ct = default);
+    Task<List<MenuItemPosDto>> GetActiveForPosAsync(CancellationToken ct = default);
 }

@@ -1,20 +1,29 @@
 # Restaurant Management System  
-**Inventory, Recipe & Sales Tracking API**
+**Inventory, Recipe & Sales Tracking API with React Frontend**
 
 This project is a **Restaurant Management System** developed as part of an academic final project.  
-It focuses on **inventory management with expiry dates**, **recipe-based stock deduction**, and **role-based access control (RBAC)** using **ASP.NET Core Web API**, **Entity Framework Core**, and **SQL Server running in Docker**.
+It is a full-stack application featuring an **ASP.NET Core Web API** backend and a **React (Vite)** frontend. It focuses on **inventory management with expiry dates**, **recipe-based stock deduction**, and **role-based access control (RBAC)**.
 
 ---
 
 ## 🚀 Technologies Used
 
-- **ASP.NET Core Web API**
+### Backend
+- **ASP.NET Core Web API** (.NET 8)
 - **Entity Framework Core**
 - **SQL Server 2022 (Docker)**
 - **Swagger / OpenAPI**
-- **Docker Desktop (macOS – Apple Silicon)**
-- **Azure Data Studio**
 - **Clean Architecture principles**
+
+### Frontend
+- **React** (Vite)
+- **Material UI (MUI)**
+- **Axios**
+
+### Tools & Devops
+- **Docker Desktop**
+- **Azure Data Studio / SSMS**
+- **Git**
 
 ---
 
@@ -22,24 +31,19 @@ It focuses on **inventory management with expiry dates**, **recipe-based stock d
 
 The project follows a **Clean / Layered Architecture** structure:
 
+```
 RestaurantManagement
 │
-├── RestaurantManagement.API
-│ ├── Controllers
-│ ├── Swagger configuration
-│ └── Program.cs
+├── RestaurantManagement.API          # API Layer (Controllers, Program.cs)
 │
-├── RestaurantManagement.Application
-│ └── Application services (business logic – in progress)
+├── RestaurantManagement.Application  # Business Logic (Services, DTOs, Interfaces)
 │
-├── RestaurantManagement.Domain
-│ └── Core domain entities (no framework dependencies)
+├── RestaurantManagement.Domain       # Core Domain Entities (No dependencies)
 │
-└── RestaurantManagement.Infrastructure
-├── DbContext
-├── EF Core configurations
-└── Migrations
-
+├── RestaurantManagement.Infrastructure # Data Access (DbContext, Migrations, Repositories)
+│
+└── restaurant-frontend               # React Frontend Application
+```
 
 ### Why Clean Architecture?
 - Clear separation of concerns  
@@ -48,99 +52,82 @@ RestaurantManagement
 
 ---
 
-## 🔐 Role-Based Access Control (RBAC)
+## �️ Setup & Running
+
+### Prerequisites
+- .NET 8 SDK
+- Node.js & npm
+- Docker Desktop
+
+### 1. Database Setup
+Ensure Docker is running, then invoke the database container:
+```bash
+# Example command to run SQL Server in Docker
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong!Passw0rd" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
+```
+*Note: Update the connection string in `appsettings.json` if necessary.*
+
+### 2. Backend (API)
+Navigate to the root directory and run:
+```bash
+dotnet restore
+dotnet run --project RestaurantManagement.API
+```
+The API will be available at imports `https://localhost:7127` (or configured port).
+Swagger UI: `https://localhost:7127/swagger`
+
+### 3. Frontend
+Navigate to the frontend directory:
+```bash
+cd restaurant-frontend
+npm install
+npm run dev
+```
+The frontend will be typically available at `http://localhost:5173`.
+
+---
+
+## �🔐 Role-Based Access Control (RBAC)
 
 The system supports flexible and extensible role management.
 
 ### Default Roles
-- Admin  
-- Manager  
-- Assistant Manager  
-- Head Chef  
-- Chef  
-- Waiter  
+- Admin, Manager, Assistant Manager, Head Chef, Chef, Waiter
 
 ### RBAC Rules
-- A user can have **only one role**
-- A role can have **multiple permissions**
-- Admin users can:
-  - Create roles
-  - Assign permissions
-  - Change user roles
-- New roles and permissions can be added dynamically
+- Users have **one role**
+- Roles have **multiple permissions**
+- **Admin** can manage roles and permissions dynamically.
 
 ---
 
-## 📦 Inventory Management
+## 📦 Inventory & Recipes
 
-Inventory is managed using **batch-based tracking**.
+### Inventory Management
+- **Batch-based tracking** (FIFO/FEFO)
+- Tracks Quantity, Expiry Date, Unit Cost
+- **Inventory Rules**: Reorder levels, Expiry alerts
 
-### Ingredient Batches
-Each ingredient batch includes:
-- Quantity
-- Expiry date
-- Unit cost
-- Delivery date
-
-### Inventory Rules
-- **Reorder level**
-- **Expiry alert days**
-- One-to-one relationship between `Ingredient` and `InventoryRule`
-
-### Key Design Decisions
-- FIFO (First Expiry First Out) is used
-- Expired stock is never deducted
-- Inventory changes are logged for audit purposes
+### Recipes & Sales
+- **Recipes** link Menu Items to Ingredients (e.g., 1 Pizza -> Dough, Sauce, Cheese)
+- **Sales** trigger automatic stock deduction based on recipes.
+- **StockMovements** record every IN/OUT transaction for audit.
 
 ---
 
-## 🍕 Recipes & Sales Logic
+## 🧪 Testing
 
-### Recipes
-- Each menu item has a recipe
-- Recipes define ingredient quantities per unit
-- Example:
-  - 1 Pizza → Dough + Sauce + Cheese
-
-### Sales
-- When a sale is created:
-  1. Recipe requirements are calculated
-  2. Inventory is deducted from batches (FIFO)
-  3. Stock movements are recorded
+- **Swagger UI** for API endpoint testing.
+- **Manual Testing** via the React Frontend (POS, Inventory screens).
 
 ---
 
-## 📊 Stock Movement Tracking
-
-All inventory changes are recorded in the **StockMovements** table.
-
-### StockMovement Types
-- IN (Delivery)
-- OUT (Sale)
-- ADJUSTMENT (Manual correction)
-
-### Important Note
-Cascade delete is **intentionally disabled** to prevent loss of historical data.
+## 📚 Author
+**Kamber Baran Demir**  
+Higher Diploma in Computer Science  
+Web & Cloud Technologies  
 
 ---
 
-## 🗄️ Database Setup (Docker)
-
-SQL Server runs inside a Docker container.
-
-### Run SQL Server with Docker (Apple Silicon compatible)
-
-🧪 API Testing (Swagger)
-Swagger UI is enabled for testing and documentation.
-
-
-📚 Author
-Kamber Baran Demir
-Higher Diploma in Computer Science
-Web & Cloud Technologies
-
-
-📄 License
+## 📄 License
 This project is developed for educational purposes only.
-
----

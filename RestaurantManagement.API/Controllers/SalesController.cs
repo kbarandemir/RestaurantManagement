@@ -22,17 +22,16 @@ public sealed class SalesController : ControllerBase
         => (await _service.GetByIdAsync(id, ct)) is { } s ? Ok(s) : NotFound();
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateSaleDto dto, CancellationToken ct)
+    public async Task<IActionResult> CreateSale(CreateSaleDto dto, CancellationToken ct)
     {
         try
         {
-            var saleId = await _service.CreateAsync(dto, ct);
+            var saleId = await _service.CreateSaleAsync(dto, ct);
             return Ok(new { saleId });
         }
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
         }
-        
     }
 }

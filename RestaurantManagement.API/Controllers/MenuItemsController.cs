@@ -42,4 +42,8 @@ public sealed class MenuItemsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Deactivate(int id, CancellationToken ct = default)
         => await _service.DeactivateAsync(id, ct) ? NoContent() : NotFound();
+
+    [HttpGet("pos")]
+    public async Task<ActionResult<List<MenuItemPosDto>>> GetActiveForPos(CancellationToken ct = default)
+        => Ok(await _service.GetActiveForPosAsync(ct));
 }

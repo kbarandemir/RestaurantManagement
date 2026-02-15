@@ -77,7 +77,7 @@ export default function Pos() {
     (async () => {
       try {
         setLoading(true);
-        const res = await api.get("/api/menuitems");
+        const res = await api.get("/api/menuitems/pos");
         const items = Array.isArray(res.data) ? res.data : [];
         // sadece aktifleri göster (istersen kaldır)
         const active = items.filter((x) => x.isActive !== false);
@@ -96,7 +96,7 @@ export default function Pos() {
   const categories = useMemo(() => {
     const cats = new Set();
     for (const mi of menuItems) {
-      const c = (mi.category || "").trim();
+      const c = (mi.categoryName || "").trim();
       if (c) cats.add(c);
     }
     return ["All", ...Array.from(cats).sort((a, b) => a.localeCompare(b))];
@@ -111,7 +111,7 @@ export default function Pos() {
   const filteredItems = useMemo(() => {
     const s = search.trim().toLowerCase();
     return menuItems
-      .filter((mi) => (tab === "All" ? true : (mi.category || "").trim() === tab))
+      .filter((mi) => (tab === "All" ? true : (mi.categoryName || "").trim() === tab))
       .filter((mi) => (s ? (mi.name || "").toLowerCase().includes(s) : true))
       .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
   }, [menuItems, search, tab]);
@@ -201,35 +201,32 @@ export default function Pos() {
 
   const completeSale = async () => {
     if (cartItems.length === 0) {
-      setToast({ open: true, type: "warning", msg: "Sepet boş." });
+      setToast({ open: true, type: "warning", msg: "Cart is empty" });
       return;
     }
 
-    const createdByUserId = getUserIdFromToken(); // backend istiyorsa
-    const body = {
-      createdByUserId: createdByUserId ?? 0, // backend nullable ise 0 yerine null da olabilir
-      // Not: backend'in dto alan adı "items" / "saleItems" farklıysa burada değiştir
-      items: cartItems.map((x) => ({
-        menuItemId: x.menuItemId,
-        quantity: x.qty,
-      })),
-      // İstersen backend DTO’na eklenirse:
-      // customerName,
-      // tableNo,
-      // discountPct,
-    };
+    if (!customerName || !tableNo) {
+      setToast({ open: true, type: "error", msg: "Please enter Customer Name and Table No." });
+      return;
+    }
 
     try {
-      await api.post("/api/sales", body);
-      setToast({ open: true, type: "success", msg: "Sale completed ✅ Stock FEFO düşümü yapıldı." });
+      const saleDto = {
+        createdByUserId: getUserIdFromToken() || 1,
+        items: cartItems.map((item) => ({
+          menuItemId: item.menuItemId,
+          quantity: item.qty,
+        })),
+      };
+
+      await api.post("/api/sales", saleDto);
+
+      setToast({ open: true, type: "success", msg: "Sale completed successfully!" });
       clearCart();
-    } catch (e) {
-      console.error(e);
-      const msg =
-        e?.response?.data?.message ||
-        e?.response?.data ||
-        "Sale oluşturulamadı. Recipe/stock yetersizliği veya backend hatası olabilir.";
-      setToast({ open: true, type: "error", msg: String(msg) });
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response?.data : "Sale failed");
+      setToast({ open: true, type: "error", msg });
     }
   };
 
@@ -388,6 +385,12 @@ export default function Pos() {
             startIcon={<CheckCircleOutlineIcon />}
             onClick={completeSale}
             disabled={cartItems.length === 0}
+            sx={{
+              mt: 2,
+              bgcolor: "black",
+              color: "white",
+              "&:hover": { bgcolor: "#333" }
+            }}
           >
             Complete Sale
           </Button>
@@ -474,9 +477,9 @@ export default function Pos() {
                       <Typography sx={{ fontWeight: 700 }} noWrap>
                         {mi.name}
                       </Typography>
-                      {mi.category ? (
+                      {mi.categoryName ? (
                         <Typography variant="caption" color="text.secondary" noWrap>
-                          {mi.category}
+                          {mi.categoryName}
                         </Typography>
                       ) : (
                         <Typography variant="caption" color="text.secondary" noWrap>

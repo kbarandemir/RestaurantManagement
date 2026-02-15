@@ -78,4 +78,20 @@ public sealed class MenuItemService : IMenuItemService
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<List<MenuItemPosDto>> GetActiveForPosAsync(CancellationToken ct = default)
+    {
+        return await _db.MenuItems.AsNoTracking()
+            .Where(x => x.IsActive)
+            .Include(x => x.Category)
+            .Select(m => new MenuItemPosDto
+            {
+                MenuItemId = m.MenuItemId,
+                Name = m.Name,
+                Price = m.Price,
+                CategoryId = m.CategoryId,
+                CategoryName = m.Category.Name
+            })
+            .ToListAsync(ct);
+    }
 }
