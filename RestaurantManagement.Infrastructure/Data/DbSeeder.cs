@@ -85,6 +85,37 @@ public static class DbSeeder
             });
             await db.SaveChangesAsync();
         }
+        // -----------------------
+        // CATEGORIES
+        // -----------------------
+        var categoryNames = new[]
+        {
+            "Pizza",
+            "Burgers",
+            "Wraps",
+            "Sides",
+            "Drinks",
+            "Desserts"
+        };
+
+        foreach (var name in categoryNames)
+        {
+            if (!await db.Categories.AnyAsync(c => c.Name == name))
+            {
+                db.Categories.Add(new Category
+                {
+                    Name = name,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        await db.SaveChangesAsync();
+
+        // Category mapping dictionary
+        var categories = await db.Categories
+            .ToDictionaryAsync(c => c.Name, c => c.CategoryId);
 
         // -----------------------
         // Ingredients (Pizza example)
@@ -104,21 +135,73 @@ public static class DbSeeder
         var cheeseId = await db.Ingredients.Where(i => i.Name == "Peynir").Select(i => i.IngredientId).FirstAsync();
 
         // -----------------------
-        // MenuItem
+        // MenuItem (with Category FK)
         // -----------------------
-        if (!await db.MenuItems.AnyAsync())
+
+
+        var existingPizza = await db.MenuItems
+            .FirstOrDefaultAsync(m => m.Name == "Margherita Pizza");
+
+        if (existingPizza == null)
         {
             db.MenuItems.Add(new MenuItem
             {
                 Name = "Margherita Pizza",
                 Price = 12.50m,
                 CreatedAt = DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                CategoryId = categories["Pizza"]
             });
+
             await db.SaveChangesAsync();
         }
+        else
+        {
+            // Eğer category boşsa veya yanlışsa düzelt
+            if (existingPizza.CategoryId == null ||
+                existingPizza.CategoryId != categories["Pizza"])
+            {
+                existingPizza.CategoryId = categories["Pizza"];
+                await db.SaveChangesAsync();
+            }
+        }
 
-        var pizzaId = await db.MenuItems.Where(m => m.Name == "Margherita Pizza").Select(m => m.MenuItemId).FirstAsync();
+        // -----------------------
+        // Additional Menu Items
+        // -----------------------
+        var newItems = new[]
+        {
+            new { Name = "Cheeseburger", Price = 10.50m, Category = "Burgers" },
+            new { Name = "Chicken Wrap", Price = 9.00m, Category = "Wraps" },
+            new { Name = "French Fries", Price = 4.50m, Category = "Sides" },
+            new { Name = "Cola", Price = 2.50m, Category = "Drinks" },
+            new { Name = "Cheesecake", Price = 6.00m, Category = "Desserts" }
+        };
+
+        foreach (var item in newItems)
+        {
+            if (!await db.MenuItems.AnyAsync(m => m.Name == item.Name))
+            {
+                db.MenuItems.Add(new MenuItem
+                {
+                    Name = item.Name,
+                    Price = item.Price,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                    CategoryId = categories[item.Category]
+                });
+            }
+        }
+        await db.SaveChangesAsync();
+
+
+        var pizzaId = await db.MenuItems
+            .Where(m => m.Name == "Margherita Pizza")
+            .Select(m => m.MenuItemId)
+            .FirstOrDefaultAsync();
+
+        if (pizzaId == 0)
+            throw new Exception("Margherita Pizza not found during seeding.");
 
         // -----------------------
         // Recipe + RecipeItems (latest active)
@@ -178,36 +261,6 @@ public static class DbSeeder
         }
         invoiceId = invoice.InvoiceId;
 
-        // -----------------------
-        // CATEGORIES
-        // -----------------------
-        var categoryNames = new[]
-        {
-            "Pizza",
-            "Burgers",
-            "Wraps",
-            "Sides",
-            "Drinks",
-            "Desserts"
-        };
-
-        // 1) Insert categories if missing
-        foreach (var name in categoryNames)
-        {
-            var exists = await db.Categories.AnyAsync(c => c.Name == name);
-            if (!exists)
-            {
-                db.Categories.Add(new Category
-                {
-                    Name = name,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
-        }
-        await db.SaveChangesAsync();
-
-        
 
         // -----------------------
         // IngredientBatches (FEFO test için 2 batch peynir)

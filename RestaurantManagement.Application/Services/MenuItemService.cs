@@ -19,7 +19,7 @@ public sealed class MenuItemService : IMenuItemService
         if (!includeInactive) q = q.Where(x => x.IsActive);
 
         return await q.OrderBy(x => x.Name)
-            .Select(x => new MenuItemListItemDto(x.MenuItemId, x.Name, x.Price, x.IsActive))
+            .Select(x => new MenuItemListItemDto(x.MenuItemId, x.Name, x.Price, x.IsActive, x.CategoryId, x.Category.Name))
             .ToListAsync(ct);
     }
 
@@ -27,7 +27,7 @@ public sealed class MenuItemService : IMenuItemService
     {
         return await _db.MenuItems.AsNoTracking()
             .Where(x => x.MenuItemId == id)
-            .Select(x => new MenuItemDetailDto(x.MenuItemId, x.Name, x.Price, x.CreatedAt, x.IsActive))
+            .Select(x => new MenuItemDetailDto(x.MenuItemId, x.Name, x.Price, x.CreatedAt, x.IsActive, x.CategoryId))
             .FirstOrDefaultAsync(ct);
     }
 
@@ -42,7 +42,8 @@ public sealed class MenuItemService : IMenuItemService
             Name = dto.Name.Trim(),
             Price = dto.Price,
             CreatedAt = DateTime.UtcNow,
-            IsActive = true
+            IsActive = true,
+            CategoryId = dto.CategoryId
         };
 
         _db.MenuItems.Add(entity);
@@ -62,6 +63,7 @@ public sealed class MenuItemService : IMenuItemService
         entity.Name = dto.Name.Trim();
         entity.Price = dto.Price;
         entity.IsActive = dto.IsActive;
+        entity.CategoryId = dto.CategoryId;
 
         await _db.SaveChangesAsync(ct);
         return true;

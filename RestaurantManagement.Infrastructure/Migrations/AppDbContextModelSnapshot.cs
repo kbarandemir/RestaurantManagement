@@ -22,6 +22,32 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.Category", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CategoryId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Ingredient", b =>
                 {
                     b.Property<int>("IngredientId")
@@ -153,6 +179,9 @@ namespace RestaurantManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MenuItemId"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -168,6 +197,8 @@ namespace RestaurantManagement.Infrastructure.Migrations
                         .HasColumnType("decimal(10,2)");
 
                     b.HasKey("MenuItemId");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("MenuItems");
                 });
@@ -452,6 +483,17 @@ namespace RestaurantManagement.Infrastructure.Migrations
                     b.Navigation("Ingredient");
                 });
 
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.MenuItem", b =>
+                {
+                    b.HasOne("RestaurantManagement.Domain.Entities.Category", "Category")
+                        .WithMany("MenuItems")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Recipe", b =>
                 {
                     b.HasOne("RestaurantManagement.Domain.Entities.MenuItem", "MenuItem")
@@ -565,6 +607,11 @@ namespace RestaurantManagement.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("RestaurantManagement.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("MenuItems");
                 });
 
             modelBuilder.Entity("RestaurantManagement.Domain.Entities.Ingredient", b =>

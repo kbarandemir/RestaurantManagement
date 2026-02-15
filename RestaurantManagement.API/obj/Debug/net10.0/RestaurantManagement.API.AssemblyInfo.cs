@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RestaurantManagement.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5a5f2d0b3d634b6b18a133f632568ada578e685a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3c9105e9c4ab9249a87f5ba74e4c657f4a2ba43c")]
 [assembly: System.Reflection.AssemblyProductAttribute("RestaurantManagement.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RestaurantManagement.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
