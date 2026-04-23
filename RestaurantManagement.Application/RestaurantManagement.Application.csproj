@@ -18,4 +18,8 @@
     <EnableDefaultResourceItems>false</EnableDefaultResourceItems>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Remove="**\*.resx" />
+  </ItemGroup>
+
 </Project>
