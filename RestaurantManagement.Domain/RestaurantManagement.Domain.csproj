@@ -4,11 +4,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <EnableDefaultResourceItems>false</EnableDefaultResourceItems>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="**\*.resx" />
-  </ItemGroup>
 
 </Project>

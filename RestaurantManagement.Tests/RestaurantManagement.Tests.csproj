@@ -6,12 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <EnableDefaultResourceItems>false</EnableDefaultResourceItems>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="**\*.resx" />
-  </ItemGroup>
 
   <!-- Test framework packages -->
   <ItemGroup>
