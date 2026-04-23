@@ -1,17 +1,14 @@
 # ── Base Image (Runtime) ──────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
 # ── Build Stage ─────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy solution-level build props first (fixes .NET 10 resource bug globally)
-COPY ["Directory.Build.props", "./"]
-
-# Copy all project files individually to leverage caching
+# Copy project files for restore
 COPY ["RestaurantManagement.API/RestaurantManagement.API.csproj", "RestaurantManagement.API/"]
 COPY ["RestaurantManagement.Application/RestaurantManagement.Application.csproj", "RestaurantManagement.Application/"]
 COPY ["RestaurantManagement.Infrastructure/RestaurantManagement.Infrastructure.csproj", "RestaurantManagement.Infrastructure/"]
@@ -20,10 +17,10 @@ COPY ["RestaurantManagement.Domain/RestaurantManagement.Domain.csproj", "Restaur
 # Restore dependencies
 RUN dotnet restore "RestaurantManagement.API/RestaurantManagement.API.csproj"
 
-# Copy the entire source tree
+# Copy full source tree
 COPY . .
 
-# Build the main project
+# Build
 WORKDIR "/src/RestaurantManagement.API"
 RUN dotnet build "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 

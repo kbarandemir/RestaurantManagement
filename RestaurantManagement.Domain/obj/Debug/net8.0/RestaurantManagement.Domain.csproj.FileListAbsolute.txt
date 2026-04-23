@@ -1,0 +1,12 @@
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/bin/Debug/net8.0/RestaurantManagement.Domain.deps.json
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/bin/Debug/net8.0/RestaurantManagement.Domain.dll
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/bin/Debug/net8.0/RestaurantManagement.Domain.pdb
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.AssemblyInfoInputs.cache
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.AssemblyInfo.cs
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.csproj.CoreCompileInputs.cache
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.sourcelink.json
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.dll
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/refint/RestaurantManagement.Domain.dll
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/RestaurantManagement.Domain.pdb
+/Users/kamberbarandemir/Desktop/DBS/Project/ProjectCode/RestaurantManagement/RestaurantManagement.Domain/obj/Debug/net8.0/ref/RestaurantManagement.Domain.dll
