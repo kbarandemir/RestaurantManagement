@@ -23,12 +23,12 @@ COPY . .
 WORKDIR "/src/RestaurantManagement.API"
 
 # Build the project
-RUN dotnet build "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:EnableDefaultResourceItems=false
 
 # ── Publish Stage ───────────────────────────────────────────────────────────
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false /p:EnableDefaultResourceItems=false
 
 # ── Final Stage (Runtime) ──────────────────────────────────────────────────
 FROM base AS final
