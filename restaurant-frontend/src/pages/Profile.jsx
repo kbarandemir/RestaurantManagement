@@ -90,23 +90,31 @@ function MyProfileTab({ user, role }) {
         taxId: user?.taxId || "",
     });
 
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                firstName: user.firstName || "",
+                lastName: user.lastName || "",
+                email: user.email || "",
+                phoneNumber: user.phoneNumber || "",
+                country: user.country || "",
+                city: user.city || "",
+                postalCode: user.postalCode || "",
+                taxId: user.taxId || "",
+            });
+        }
+    }, [user]);
+
     const updateMut = useMutation({
         mutationFn: async (data) => {
             await api.put(`/api/Users/${user.userId}`, {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                email: data.email,
-                phoneNumber: data.phoneNumber,
-                country: data.country,
-                city: data.city,
-                postalCode: data.postalCode,
-                taxId: data.taxId,
-                isActive: true,
+                ...user, // preserve current fields
+                ...data, // overwrite with form data
             });
         },
         onSuccess: () => {
             setIsEditing(false);
-            window.location.reload(); // simple brute-force approach to refresh AuthContext memory
+            window.location.reload(); 
         }
     });
 
@@ -135,7 +143,7 @@ function MyProfileTab({ user, role }) {
                             {role || "Staff"}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                            London, United Kingdom
+                            {user?.city ? `${user.city}, ${user.country || "UK"}` : "Location not set"}
                         </Typography>
                     </Box>
                 </Box>
@@ -153,7 +161,7 @@ function MyProfileTab({ user, role }) {
             </SectionCard>
 
             {/* Address */}
-            <SectionCard title="Address" onEdit={null}>
+            <SectionCard title="Address" onEdit={() => setIsEditing(true)}>
                 <Grid container spacing={3}>
                     <Grid item xs={6}><InfoField label="Country" value={user?.country || "N/A"} /></Grid>
                     <Grid item xs={6}><InfoField label="City / State" value={user?.city || "N/A"} /></Grid>

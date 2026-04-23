@@ -1,0 +1,12 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/wwwroot
+**/.env
+restaurant-frontend/
+*.db
+*.db-shm
+*.db-wal

@@ -36,7 +36,7 @@ var key = jwt["Key"]!;
 // ── Database Configuration ──────────────────────────────────────────────────
 // Register Entity Framework with SQL Server using the connection string
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // Register the DbContext abstraction for Dependency Injection across service layers
