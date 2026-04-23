@@ -1,36 +1,33 @@
-# ── Base Image (Runtime) ──────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 8080
-
-# ── Build Stage ─────────────────────────────────────────────────────────────
+# Build Stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy project files for restore
+# Tüm .csproj dosyalarını kopyala ve restore et
 COPY ["RestaurantManagement.API/RestaurantManagement.API.csproj", "RestaurantManagement.API/"]
 COPY ["RestaurantManagement.Application/RestaurantManagement.Application.csproj", "RestaurantManagement.Application/"]
-COPY ["RestaurantManagement.Infrastructure/RestaurantManagement.Infrastructure.csproj", "RestaurantManagement.Infrastructure/"]
 COPY ["RestaurantManagement.Domain/RestaurantManagement.Domain.csproj", "RestaurantManagement.Domain/"]
+COPY ["RestaurantManagement.Infrastructure/RestaurantManagement.Infrastructure.csproj", "RestaurantManagement.Infrastructure/"]
 
-# Restore dependencies
 RUN dotnet restore "RestaurantManagement.API/RestaurantManagement.API.csproj"
 
-# Copy full source tree
+# Tüm kaynak kodunu kopyala
 COPY . .
 
-# Build
+# API projesini derle
 WORKDIR "/src/RestaurantManagement.API"
-RUN dotnet build "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:GenerateResourceWarnOnMissingSource=true
+RUN dotnet build "RestaurantManagement.API.csproj" -c Release -o /app/build /p:GenerateResourceWarnOnMissingSource=true
 
-# ── Publish Stage ───────────────────────────────────────────────────────────
+# Publish Stage
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "RestaurantManagement.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# ── Final Stage (Runtime) ──────────────────────────────────────────────────
-FROM base AS final
+# Final Stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# SQLite veritabanı dosyası için gerekli izinler
+USER root
+RUN mkdir -p /app/Data && chmod 777 /app/Data
+
 ENTRYPOINT ["dotnet", "RestaurantManagement.API.dll"]
