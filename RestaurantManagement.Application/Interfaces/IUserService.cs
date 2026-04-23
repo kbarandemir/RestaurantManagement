@@ -12,4 +12,6 @@ public interface IUserService
 
     Task<bool> ChangeRoleAsync(int id, ChangeUserRoleDto dto, CancellationToken ct = default);
     Task<bool> DeactivateAsync(int id, CancellationToken ct = default);
+
+    Task<GeneratePasswordResponseDto> GenerateTempPasswordAsync(int userId, CancellationToken ct = default);
 }

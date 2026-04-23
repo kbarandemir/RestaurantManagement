@@ -44,6 +44,16 @@ public class AppDbContext : DbContext, IAppDbContext
     // -----------------------
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
+    // -----------------------
+    // Roster
+    // -----------------------
+    public DbSet<Shift> Shifts => Set<Shift>();
+
+    // -----------------------
+    // Reservations
+    // -----------------------
+    public DbSet<Reservation> Reservations => Set<Reservation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -118,6 +128,10 @@ public class AppDbContext : DbContext, IAppDbContext
         modelBuilder.Entity<Invoice>()
             .Property(x => x.TotalCost)
             .HasPrecision(10, 2);
+
+        modelBuilder.Entity<Invoice>()
+            .Property(x => x.SupplierName)
+            .IsRequired(false);
 
         modelBuilder.Entity<RecipeItem>()
             .Property(x => x.QuantityPerUnit)
@@ -238,6 +252,18 @@ public class AppDbContext : DbContext, IAppDbContext
                 .WithMany(c => c.MenuItems)
                 .HasForeignKey(mi => mi.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+        // -----------------------
+        // Roster / Shifts
+        // -----------------------
+        modelBuilder.Entity<Shift>()
+            .HasKey(s => s.ShiftId);
+
+        modelBuilder.Entity<Shift>()
+            .HasOne(s => s.User)
+            .WithMany(u => u.Shifts)
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
 
     }

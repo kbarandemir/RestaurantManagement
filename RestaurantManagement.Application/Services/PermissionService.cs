@@ -8,8 +8,9 @@ namespace RestaurantManagement.Application.Services;
 public sealed class PermissionService : IPermissionService
 {
     private readonly IAppDbContext _db;
-    public PermissionService(IAppDbContext db) => _db = db;
-
+    public PermissionService(IAppDbContext db) {
+         _db = db;
+    }
     public async Task<List<PermissionDto>> GetAllAsync(CancellationToken ct = default)
         => await _db.Permissions.AsNoTracking()
             .OrderBy(p => p.PermissionKey)
@@ -57,7 +58,7 @@ public sealed class PermissionService : IPermissionService
         var p = await _db.Permissions.FirstOrDefaultAsync(x => x.PermissionId == id, ct);
         if (p is null) return false;
 
-        // Kullanımdaysa silme
+        // Cannot delete a permission that is currently in use
         var used = await _db.RolePermissions.AnyAsync(rp => rp.PermissionId == id, ct);
         if (used) throw new ArgumentException("Permission is assigned to roles. Remove assignments first.");
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantManagement.Application.DTOs.MenuItems;
 using RestaurantManagement.Application.Interfaces;
@@ -22,6 +23,7 @@ public sealed class MenuItemsController : ControllerBase
         => (await _service.GetByIdAsync(id, ct)) is { } item ? Ok(item) : NotFound();
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Create([FromBody] CreateMenuItemDto dto, CancellationToken ct = default)
     {
         try
@@ -33,6 +35,7 @@ public sealed class MenuItemsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateMenuItemDto dto, CancellationToken ct = default)
     {
         try { return await _service.UpdateAsync(id, dto, ct) ? NoContent() : NotFound(); }
@@ -40,6 +43,7 @@ public sealed class MenuItemsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> Deactivate(int id, CancellationToken ct = default)
         => await _service.DeactivateAsync(id, ct) ? NoContent() : NotFound();
 

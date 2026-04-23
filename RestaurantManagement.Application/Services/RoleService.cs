@@ -8,7 +8,9 @@ namespace RestaurantManagement.Application.Services;
 public sealed class RoleService : IRoleService
 {
     private readonly IAppDbContext _db;
-    public RoleService(IAppDbContext db) => _db = db;
+    public RoleService(IAppDbContext db) {
+        _db = db;
+    } 
 
     public async Task<List<RoleDto>> GetAllAsync(CancellationToken ct = default)
         => await _db.Roles.AsNoTracking()
@@ -57,7 +59,7 @@ public sealed class RoleService : IRoleService
         var role = await _db.Roles.FirstOrDefaultAsync(r => r.RoleId == id, ct);
         if (role is null) return false;
 
-        // Eğer bu role bağlı user varsa silme (güvenli)
+        // Safety check: do not delete a role that still has assigned users
         var used = await _db.Users.AnyAsync(u => u.RoleId == id, ct);
         if (used) throw new ArgumentException("Role is assigned to users. Remove users from this role first.");
 

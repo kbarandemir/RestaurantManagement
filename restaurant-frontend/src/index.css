@@ -1,68 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Design tokens ──────────────────────────────────────────────────────────── */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Sidebar */
+  --sidebar-width: 270px;
+  --sidebar-collapsed-width: 72px;
+  --sidebar-bg: #FFFFFF;
+  --sidebar-border: #E5E7EB;
+  --sidebar-item-hover: #F3F4F6;
+  --sidebar-item-active-bg: #EEF2FF;
+  --sidebar-item-active-color: #4F46E5;
+  --sidebar-text: #374151;
+  --sidebar-text-secondary: #9CA3AF;
+  --sidebar-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Surface */
+  --bg-body: #F9FAFB;
+  --bg-card: #FFFFFF;
+  --border-color: #E5E7EB;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 1px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+
+  /* Brand */
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --accent: #10B981;
+  --accent-light: #D1FAE5;
+  --warning: #F59E0B;
+  --warning-light: #FEF3C7;
+  --danger: #EF4444;
+  --danger-light: #FEE2E2;
+}
+
+/* ── Dark Mode ────────────────────────────────────────────────────────────── */
+body.dark-mode {
+  --sidebar-bg: #111827;
+  --sidebar-border: #1F2937;
+  --sidebar-item-hover: #1F2937;
+  --sidebar-item-active-bg: #312E81;
+  --sidebar-item-active-color: #A5B4FC;
+  --sidebar-text: #F3F4F6;
+  --sidebar-text-secondary: #9CA3AF;
+
+  --bg-body: #030712;
+  --bg-card: #111827;
+  --border-color: #1F2937;
+  
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
+
+  --primary-light: #312E81;
+  --accent-light: #064E3B;
+  --warning-light: #78350F;
+  --danger-light: #7F1D1D;
+}
+
+body.dark-mode .MuiPaper-root {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-mode header {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-mode .MuiTypography-root { color: inherit !important; }
+body.dark-mode .MuiTypography-colorTextSecondary { color: var(--text-secondary) !important; }
+body.dark-mode .MuiInputBase-input { color: var(--text-primary) !important; }
+body.dark-mode .MuiOutlinedInput-notchedOutline { border-color: var(--border-color) !important; }
+body.dark-mode .MuiListItemText-primary { color: var(--text-primary) !important; }
+body.dark-mode .MuiListItemText-secondary { color: var(--text-secondary) !important; }
+body.dark-mode .MuiDivider-root { border-color: var(--border-color) !important; }
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: var(--font-family);
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  line-height: 1.5;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#root {
+  min-height: 100vh;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
 }

@@ -17,7 +17,21 @@ public sealed class InvoiceService : IInvoiceService
     {
         return await _db.Invoices.AsNoTracking()
             .OrderByDescending(x => x.Date)
-            .Select(x => new InvoiceDto(x.InvoiceId, x.Date, x.TotalCost, x.InvoicePictureUrl, x.SupplierName))
+            .Select(x => new InvoiceDto
+            {
+                InvoiceId = x.InvoiceId,
+                InvoiceDate = x.Date,
+                TotalCost = x.TotalCost,
+                SupplierName = x.SupplierName,
+                Items = x.IngredientBatches.Select(b => new InvoiceItemDto
+                {
+                    IngredientId = b.IngredientId,
+                    IngredientName = b.Ingredient.Name,
+                    Quantity = b.QuantityOnHand,
+                    UnitCost = b.UnitCost ?? 0,
+                    ExpiryDate = b.ExpiryDate
+                }).ToList()
+            })
             .ToListAsync(ct);
     }
 
@@ -25,7 +39,21 @@ public sealed class InvoiceService : IInvoiceService
     {
         return await _db.Invoices.AsNoTracking()
             .Where(x => x.InvoiceId == id)
-            .Select(x => new InvoiceDto(x.InvoiceId, x.Date, x.TotalCost, x.InvoicePictureUrl, x.SupplierName))
+            .Select(x => new InvoiceDto
+            {
+                InvoiceId = x.InvoiceId,
+                InvoiceDate = x.Date,
+                TotalCost = x.TotalCost,
+                SupplierName = x.SupplierName,
+                Items = x.IngredientBatches.Select(b => new InvoiceItemDto
+                {
+                    IngredientId = b.IngredientId,
+                    IngredientName = b.Ingredient.Name,
+                    Quantity = b.QuantityOnHand,
+                    UnitCost = b.UnitCost ?? 0,
+                    ExpiryDate = b.ExpiryDate
+                }).ToList()
+            })
             .FirstOrDefaultAsync(ct);
     }
 
@@ -37,12 +65,30 @@ public sealed class InvoiceService : IInvoiceService
         {
             Date = dto.Date.Date,
             TotalCost = dto.TotalCost,
-            InvoicePictureUrl = dto.InvoicePictureUrl,
-            SupplierName = dto.SupplierName
+            SupplierName = dto.SupplierName ?? "Unknown"
         };
 
         _db.Invoices.Add(entity);
         await _db.SaveChangesAsync(ct);
+
+        if (dto.Batches != null && dto.Batches.Any())
+        {
+            foreach (var b in dto.Batches)
+            {
+                _db.IngredientBatches.Add(new IngredientBatch
+                {
+                    InvoiceId = entity.InvoiceId,
+                    IngredientId = b.IngredientId,
+                    QuantityOnHand = b.QuantityOnHand,
+                    UnitCost = b.UnitCost,
+                    ReceivedDate = entity.Date,
+                    ExpiryDate = b.ExpiryDate,
+                    IsActive = true
+                });
+            }
+            await _db.SaveChangesAsync(ct);
+        }
+
         return entity.InvoiceId;
     }
 }

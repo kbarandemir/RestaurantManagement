@@ -12,35 +12,63 @@ public sealed class RecipeService : IRecipeService
         _db = db;
     } 
 
-    public async Task<List<RecipeListItemDto>> GetAllAsync(CancellationToken ct = default)
+    public async Task<List<RecipeDetailDto>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _db.Recipes.AsNoTracking()
+        var recipes = await _db.Recipes.AsNoTracking()
+            .Include(r => r.MenuItem).ThenInclude(m => m.Category)
+            .Include(r => r.Items).ThenInclude(i => i.Ingredient)
             .OrderByDescending(r => r.CreatedAt)
-            .Select(r => new RecipeListItemDto(r.RecipeId, r.MenuItemId, r.IsActive, r.CreatedAt))
             .ToListAsync(ct);
+
+        return recipes.Select(r => new RecipeDetailDto(
+            r.RecipeId,
+            r.MenuItemId,
+            r.MenuItem.Name,
+            r.MenuItem.Category.Name,
+            r.IsActive,
+            r.CreatedAt,
+            r.PrepTime,
+            r.Servings,
+            r.Instructions,
+            r.Items.Select(ri => new RecipeItemDto(
+                ri.RecipeItemId,
+                ri.IngredientId,
+                ri.Ingredient.Name,
+                ri.QuantityPerUnit,
+                _db.IngredientBatches
+                    .Where(b => b.IngredientId == ri.IngredientId && b.IsActive && b.QuantityOnHand > 0)
+                    .OrderBy(b => b.ReceivedDate)
+                    .Select(b => (decimal?)b.UnitCost)
+                    .FirstOrDefault() ?? 0m
+            )).ToList()
+        )).ToList();
     }
 
     public async Task<RecipeDetailDto?> GetByIdAsync(int recipeId, CancellationToken ct = default)
     {
-        var recipe = await _db.Recipes.AsNoTracking()
+        var r = await _db.Recipes.AsNoTracking()
+            .Include(r => r.MenuItem).ThenInclude(m => m.Category)
+            .Include(r => r.Items).ThenInclude(i => i.Ingredient)
             .Where(r => r.RecipeId == recipeId)
-            .Select(r => new { r.RecipeId, r.MenuItemId, r.IsActive, r.CreatedAt })
             .FirstOrDefaultAsync(ct);
 
-        if (recipe is null) return null;
+        if (r is null) return null;
 
-        var items = await _db.RecipeItems.AsNoTracking()
-            .Where(ri => ri.RecipeId == recipeId)
-            .OrderBy(ri => ri.RecipeItemId)
-            .Select(ri => new RecipeItemDto(ri.RecipeItemId, ri.IngredientId, ri.QuantityPerUnit))
-            .ToListAsync(ct);
-
-        return new RecipeDetailDto(recipe.RecipeId, recipe.MenuItemId, recipe.IsActive, recipe.CreatedAt, items);
+        return new RecipeDetailDto(
+            r.RecipeId, r.MenuItemId, r.MenuItem.Name, r.MenuItem.Category.Name, r.IsActive, r.CreatedAt, r.PrepTime, r.Servings, r.Instructions,
+            r.Items.Select(ri => new RecipeItemDto(
+                ri.RecipeItemId, ri.IngredientId, ri.Ingredient.Name, ri.QuantityPerUnit,
+                _db.IngredientBatches
+                    .Where(b => b.IngredientId == ri.IngredientId && b.IsActive && b.QuantityOnHand > 0)
+                    .OrderBy(b => b.ReceivedDate)
+                    .Select(b => (decimal?)b.UnitCost)
+                    .FirstOrDefault() ?? 0m
+            )).ToList()
+        );
     }
 
     public async Task<RecipeDetailDto?> GetActiveByMenuItemIdAsync(int menuItemId, CancellationToken ct = default)
     {
-        // Latest active recipe for a menu item
         var recipeId = await _db.Recipes.AsNoTracking()
             .Where(r => r.MenuItemId == menuItemId && r.IsActive)
             .OrderByDescending(r => r.CreatedAt)

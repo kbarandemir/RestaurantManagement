@@ -8,8 +8,9 @@ namespace RestaurantManagement.Application.Services;
 public sealed class RolePermissionService : IRolePermissionService
 {
     private readonly IAppDbContext _db;
-    public RolePermissionService(IAppDbContext db) => _db = db;
-
+    public RolePermissionService(IAppDbContext db) {
+        _db = db;
+    } 
     public async Task<List<RolePermissionDto>> GetByRoleIdAsync(int roleId, CancellationToken ct = default)
     {
         return await _db.RolePermissions.AsNoTracking()

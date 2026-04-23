@@ -4,7 +4,7 @@ namespace RestaurantManagement.Application.Interfaces;
 
 public interface IRecipeService
 {
-    Task<List<RecipeListItemDto>> GetAllAsync(CancellationToken ct = default);
+    Task<List<RecipeDetailDto>> GetAllAsync(CancellationToken ct = default);
     Task<RecipeDetailDto?> GetByIdAsync(int recipeId, CancellationToken ct = default);
     Task<RecipeDetailDto?> GetActiveByMenuItemIdAsync(int menuItemId, CancellationToken ct = default);
 

@@ -34,4 +34,20 @@ public sealed class SalesController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpPatch("{id:int}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateSaleStatusRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var updated = await _service.UpdateSaleStatusAsync(id, request.Status, ct);
+            return updated ? NoContent() : NotFound();
+        }
+        catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+}
+
+public class UpdateSaleStatusRequest
+{
+    public string Status { get; set; } = null!;
 }

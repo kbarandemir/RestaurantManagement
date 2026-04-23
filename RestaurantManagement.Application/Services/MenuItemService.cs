@@ -81,17 +81,55 @@ public sealed class MenuItemService : IMenuItemService
 
     public async Task<List<MenuItemPosDto>> GetActiveForPosAsync(CancellationToken ct = default)
     {
-        return await _db.MenuItems.AsNoTracking()
+        // 1. Get all active menu items
+        var items = await _db.MenuItems.AsNoTracking()
             .Where(x => x.IsActive)
             .Include(x => x.Category)
-            .Select(m => new MenuItemPosDto
+            .ToListAsync(ct);
+
+        // 2. Get all active recipes + recipe items
+        var activeRecipes = await _db.Recipes.AsNoTracking()
+            .Where(r => r.IsActive)
+            .Include(r => r.Items)
+            .ToListAsync(ct);
+
+        // 3. Get current available (active & non-expired) stock per ingredient
+        var stockPerIngredient = await _db.IngredientBatches.AsNoTracking()
+            .Where(b => b.IsActive && b.QuantityOnHand > 0 && b.ExpiryDate > DateTime.UtcNow)
+            .GroupBy(b => b.IngredientId)
+            .Select(g => new { IngredientId = g.Key, TotalQty = g.Sum(b => b.QuantityOnHand) })
+            .ToDictionaryAsync(x => x.IngredientId, x => x.TotalQty, ct);
+
+        // 4. Map to DTO and calculate availability
+        var recipeLookup = activeRecipes
+            .GroupBy(r => r.MenuItemId)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(r => r.CreatedAt).First());
+
+        return items.Select(m => {
+            bool isAvailable = true;
+            
+            if (recipeLookup.TryGetValue(m.MenuItemId, out var recipe))
+            {
+                foreach (var ri in recipe.Items)
+                {
+                    var available = stockPerIngredient.GetValueOrDefault(ri.IngredientId, 0m);
+                    if (available < ri.QuantityPerUnit)
+                    {
+                        isAvailable = false;
+                        break;
+                    }
+                }
+            }
+
+            return new MenuItemPosDto
             {
                 MenuItemId = m.MenuItemId,
                 Name = m.Name,
                 Price = m.Price,
                 CategoryId = m.CategoryId,
-                CategoryName = m.Category.Name
-            })
-            .ToListAsync(ct);
+                CategoryName = m.Category?.Name ?? "General",
+                IsAvailable = isAvailable
+            };
+        }).ToList();
     }
 }

@@ -10,6 +10,6 @@ public class RecipeItem
     public int IngredientId { get; set; }
     public Ingredient Ingredient { get; set; } = null!;
 
-    // 1 adet MenuItem için tüketim miktarı
+    // Quantity of this ingredient consumed per 1 unit of the MenuItem
     public decimal QuantityPerUnit { get; set; }
 }

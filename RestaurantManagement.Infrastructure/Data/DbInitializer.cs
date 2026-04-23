@@ -7,19 +7,19 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext db)
     {
-        // DB up-to-date olsun
+        // Ensure the database schema is up to date
         await db.Database.MigrateAsync();
 
-        // Eğer zaten seed yapıldıysa çık (en basit kontrol)
+        // Skip seeding if data already exists (simple idempotency check)
         if (await db.Ingredients.AnyAsync() || await db.MenuItems.AnyAsync())
             return;
 
         // -------------------------
         // Ingredients
         // -------------------------
-        var dough = new Ingredient { Name = "Hamur", BaseUnit = "PCS", IsActive = true };
-        var sauce = new Ingredient { Name = "Pizza Sosu", BaseUnit = "ML", IsActive = true };
-        var cheese = new Ingredient { Name = "Peynir", BaseUnit = "G", IsActive = true };
+        var dough = new Ingredient { Name = "Dough", BaseUnit = "PCS", IsActive = true };
+        var sauce = new Ingredient { Name = "Pizza Sauce", BaseUnit = "ML", IsActive = true };
+        var cheese = new Ingredient { Name = "Cheese", BaseUnit = "G", IsActive = true };
 
         db.Ingredients.AddRange(dough, sauce, cheese);
         await db.SaveChangesAsync();
@@ -52,9 +52,9 @@ public static class DbInitializer
         await db.SaveChangesAsync();
 
         // 1 Pizza consumes:
-        // Hamur: 1 PCS
-        // Sos: 80 ML
-        // Peynir: 120 G
+        // Dough: 1 PCS
+        // Sauce: 80 ML
+        // Cheese: 120 G
         db.RecipeItems.AddRange(
             new RecipeItem { RecipeId = recipe.RecipeId, IngredientId = dough.IngredientId, QuantityPerUnit = 1m },
             new RecipeItem { RecipeId = recipe.RecipeId, IngredientId = sauce.IngredientId, QuantityPerUnit = 80m },
@@ -78,16 +78,15 @@ public static class DbInitializer
         {
             Date = DateTime.UtcNow.Date,
             TotalCost = 250.00m,
-            InvoicePictureUrl = "invoices/invoice_001.jpg",
             SupplierName = "Demo Supplier"
         };
         db.Invoices.Add(invoice);
         await db.SaveChangesAsync();
 
         // Stock (canonical units):
-        // Hamur: 150 PCS
-        // Sos: 5000 ML (5L)
-        // Peynir: 3000 G (3kg) -> 2 farklı batch ile
+        // Dough: 150 PCS
+        // Sauce: 5000 ML (5L)
+        // Cheese: 3000 G (3kg) → split into 2 batches for FEFO testing
         var today = DateTime.UtcNow.Date;
 
         db.IngredientBatches.AddRange(
@@ -111,7 +110,7 @@ public static class DbInitializer
                 ExpiryDate = today.AddDays(30),
                 IsActive = true
             },
-            // Peynir batch 1 (yakın expiry)
+            // Cheese batch 1 (expires sooner — consumed first by FEFO)
             new IngredientBatch
             {
                 IngredientId = cheese.IngredientId,
@@ -122,7 +121,7 @@ public static class DbInitializer
                 ExpiryDate = today.AddDays(3),
                 IsActive = true
             },
-            // Peynir batch 2 (daha geç expiry)
+            // Cheese batch 2 (expires later — consumed second by FEFO)
             new IngredientBatch
             {
                 IngredientId = cheese.IngredientId,

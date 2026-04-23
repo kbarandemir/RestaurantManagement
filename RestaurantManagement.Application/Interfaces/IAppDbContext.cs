@@ -26,5 +26,11 @@ public interface IAppDbContext
 
     DbSet<StockMovement> StockMovements { get; }
 
+    // Reservations
+    DbSet<Reservation> Reservations { get; }
+
+    // Roster
+    DbSet<Shift> Shifts { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

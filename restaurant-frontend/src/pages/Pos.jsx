@@ -25,28 +25,28 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-
-// Kendi axios client'ını kullanıyorsan bunu ona göre değiştir.
-// Örn: import api from "../api/client";
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
-
-// Token interceptor (projende zaten varsa kaldır)
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 
 /**
- * Beklenen backend modelleri:
- * GET /api/menuitems -> [{ menuItemId, name, price, isActive, category? }]
- * POST /api/sales -> { createdByUserId, items: [{ menuItemId, quantity }] }
+ * POS (Point of Sale) Terminal Component
  *
- * Eğer senin DTO isimlerin farklıysa (id, menuItemID vs) mapping yaparız.
+ * This is the core transaction interface where staff create new sales orders.
+ * Workflow:
+ *   1. Staff selects menu items from the right panel (filterable by category/search)
+ *   2. Items are added to the cart (left panel) with quantity controls
+ *   3. Table number is entered and optional discount applied
+ *   4. "Complete Sale" sends the order to POST /api/sales
+ *   5. Backend resolves recipes, runs FEFO inventory deduction, creates sale record
+ *
+ * Expected API endpoints:
+ *   GET  /api/menuitems/pos → [{ menuItemId, name, price, isActive, categoryName }]
+ *   POST /api/sales          → { createdByUserId, tableNo, items: [{ menuItemId, quantity }] }
+ */
+import { api } from "../api/client";
+
+/**
+ * Formats a number as Euro currency (e.g. €12.50).
+ * Used throughout the POS for displaying item prices and totals.
  */
 
 function money(n) {
@@ -66,7 +66,6 @@ export default function Pos() {
 
   // Cart: { [menuItemId]: { menuItemId, name, price, qty } }
   const [cart, setCart] = useState({});
-  const [customerName, setCustomerName] = useState("");
   const [tableNo, setTableNo] = useState("");
   const [discountPct, setDiscountPct] = useState(0);
 
@@ -79,12 +78,12 @@ export default function Pos() {
         setLoading(true);
         const res = await api.get("/api/menuitems/pos");
         const items = Array.isArray(res.data) ? res.data : [];
-        // sadece aktifleri göster (istersen kaldır)
+        // Only show active menu items in the POS
         const active = items.filter((x) => x.isActive !== false);
         if (mounted) setMenuItems(active);
       } catch (e) {
         console.error(e);
-        setToast({ open: true, type: "error", msg: "Menu items yüklenemedi. Backend çalışıyor mu?" });
+        setToast({ open: true, type: "error", msg: "Failed to load menu items. Is the backend running?" });
       } finally {
         if (mounted) setLoading(false);
       }
@@ -92,7 +91,7 @@ export default function Pos() {
     return () => (mounted = false);
   }, []);
 
-  // Category listesi (Category yoksa hepsi All altında kalır)
+  // Build category list from loaded menu items (falls back to "All" if no categories exist)
   const categories = useMemo(() => {
     const cats = new Set();
     for (const mi of menuItems) {
@@ -102,7 +101,7 @@ export default function Pos() {
     return ["All", ...Array.from(cats).sort((a, b) => a.localeCompare(b))];
   }, [menuItems]);
 
-  // Tab seçili değilse düzelt
+  // Reset tab to "All" if the current tab no longer exists in the category list
   useEffect(() => {
     if (!categories.includes(tab)) setTab("All");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,7 +179,6 @@ export default function Pos() {
 
   const clearCart = () => {
     setCart({});
-    setCustomerName("");
     setTableNo("");
     setDiscountPct(0);
   };
@@ -205,14 +203,15 @@ export default function Pos() {
       return;
     }
 
-    if (!customerName || !tableNo) {
-      setToast({ open: true, type: "error", msg: "Please enter Customer Name and Table No." });
+    if (!tableNo) {
+      setToast({ open: true, type: "error", msg: "Please enter Table No." });
       return;
     }
 
     try {
       const saleDto = {
         createdByUserId: getUserIdFromToken() || 1,
+        tableNo: tableNo,
         items: cartItems.map((item) => ({
           menuItemId: item.menuItemId,
           quantity: item.qty,
@@ -225,7 +224,8 @@ export default function Pos() {
       clearCart();
     } catch (error) {
       console.error(error);
-      const msg = error.response?.data?.message || (typeof error.response?.data === 'string' ? error.response?.data : "Sale failed");
+      const respData = error.response?.data;
+      const msg = respData?.error || respData?.message || (typeof respData === 'string' ? respData : "Sale failed");
       setToast({ open: true, type: "error", msg });
     }
   };
@@ -264,6 +264,9 @@ export default function Pos() {
             >
               Clear
             </Button>
+            <IconButton size="small" onClick={() => window.location.reload()} sx={{ border: "1px solid #ddd" }}>
+               <RefreshRoundedIcon fontSize="small" />
+            </IconButton>
           </Stack>
         </Stack>
 
@@ -275,13 +278,6 @@ export default function Pos() {
             size="small"
             value={tableNo}
             onChange={(e) => setTableNo(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Customer"
-            size="small"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
             fullWidth
           />
         </Stack>
@@ -299,7 +295,7 @@ export default function Pos() {
           <List dense disablePadding>
             {cartItems.length === 0 ? (
               <Box sx={{ p: 2 }}>
-                <Typography color="text.secondary">Sepet boş. Sağdan ürün seç.</Typography>
+                <Typography color="text.secondary">Cart is empty. Select items from the menu.</Typography>
               </Box>
             ) : (
               cartItems.map((it) => (
@@ -400,7 +396,7 @@ export default function Pos() {
             size="large"
             startIcon={<SaveOutlinedIcon />}
             disabled
-            title="Draft opsiyonel (sonra ekleriz)"
+            title="Draft functionality (coming soon)"
           >
             Draft
           </Button>
@@ -432,7 +428,7 @@ export default function Pos() {
           />
         </Stack>
 
-        {/* Categories (Category yoksa sadece All görünür) */}
+        {/* Category tabs (only "All" appears if no categories are defined) */}
         <Box sx={{ mt: 1 }}>
           <Tabs
             value={tab}
@@ -457,49 +453,62 @@ export default function Pos() {
             <Grid container spacing={2}>
               {filteredItems.map((mi) => (
                 <Grid item key={mi.menuItemId ?? mi.id} xs={6} sm={4} md={3} lg={2.4}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      cursor: "pointer",
-                      "&:hover": { boxShadow: 2 },
-                      height: 110,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                    }}
-                    onClick={() => addToCart(mi)}
-                  >
-                    <Box>
-                      <Typography sx={{ fontWeight: 700 }} noWrap>
-                        {mi.name}
-                      </Typography>
-                      {mi.categoryName ? (
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          {mi.categoryName}
-                        </Typography>
-                      ) : (
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                          {/* category yok */}
-                        </Typography>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 3,
+                        border: "1px solid",
+                        borderColor: !mi.isAvailable ? "#FEE2E2" : "divider",
+                        cursor: !mi.isAvailable ? "not-allowed" : "pointer",
+                        opacity: !mi.isAvailable ? 0.7 : 1,
+                        bgcolor: !mi.isAvailable ? "#FEF2F2" : "white",
+                        "&:hover": { boxShadow: !mi.isAvailable ? 0 : 2 },
+                        height: 110,
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        overflow: "hidden"
+                      }}
+                      onClick={() => mi.isAvailable && addToCart(mi)}
+                    >
+                      {!mi.isAvailable && (
+                        <Box sx={{ position: "absolute", top: 0, right: 0, bgcolor: "#EF4444", color: "white", px: 1, py: 0.2, fontSize: 9, fontWeight: 900, borderBottomLeftRadius: 8 }}>
+                          STOCK OUT
+                        </Box>
                       )}
-                    </Box>
-
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography sx={{ fontWeight: 800 }}>{money(mi.price)}</Typography>
-                      <Chip size="small" label="+" />
-                    </Stack>
-                  </Paper>
+                      <Box>
+                        <Typography sx={{ fontWeight: 700, color: !mi.isAvailable ? "#991B1B" : "inherit" }} noWrap title={mi.name}>
+                          {mi.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                          {mi.categoryName || " "}
+                        </Typography>
+                      </Box>
+  
+                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Typography sx={{ fontWeight: 800, color: !mi.isAvailable ? "#991B1B" : "inherit" }}>{money(mi.price)}</Typography>
+                        <Chip 
+                          size="small" 
+                          label="+" 
+                          sx={{ 
+                            height: 20, 
+                            bgcolor: !mi.isAvailable ? "#FCA5A5" : "black", 
+                            color: "white", 
+                            fontWeight: 900,
+                            "& .MuiChip-label": { px: 0.5 }
+                          }} 
+                        />
+                      </Stack>
+                    </Paper>
                 </Grid>
               ))}
 
               {filteredItems.length === 0 && (
                 <Grid item xs={12}>
                   <Box sx={{ p: 2 }}>
-                    <Typography color="text.secondary">Sonuç bulunamadı.</Typography>
+                    <Typography color="text.secondary">No results found.</Typography>
                   </Box>
                 </Grid>
               )}

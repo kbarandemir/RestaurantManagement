@@ -32,6 +32,17 @@ public sealed class UsersController : ControllerBase
         catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
     }
 
+    [HttpPost("{id:int}/generate-password")]
+    public async Task<IActionResult> GeneratePassword(int id, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _service.GenerateTempPasswordAsync(id, ct);
+            return Ok(result);
+        }
+        catch (ArgumentException ex) { return NotFound(new { error = ex.Message }); }
+    }
+
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto, CancellationToken ct)
     {

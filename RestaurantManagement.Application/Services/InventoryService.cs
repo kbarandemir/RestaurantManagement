@@ -7,7 +7,9 @@ namespace RestaurantManagement.Application.Services;
 public sealed class InventoryService : IInventoryService
 {
     private readonly IAppDbContext _db;
-    public InventoryService(IAppDbContext db) => _db = db;
+    public InventoryService(IAppDbContext db) {
+        _db = db;
+    } 
 
     public async Task<InventoryIngredientDto?> GetIngredientInventoryAsync(int ingredientId, CancellationToken ct = default)
     {
