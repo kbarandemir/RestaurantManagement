@@ -11,11 +11,6 @@ public static class DbSeeder
         // DB migration uygula (varsa)
         await db.Database.MigrateAsync();
 
-        // Permanently remove the InvoicePictureUrl column from the database to match the new code structure
-        try { 
-            await db.Database.ExecuteSqlRawAsync("IF COL_LENGTH('Invoices', 'InvoicePictureUrl') IS NOT NULL ALTER TABLE Invoices DROP COLUMN InvoicePictureUrl");
-        } catch { /* ignore if already dropped */ }
-
         // -----------------------
         // Roles
         // -----------------------
@@ -651,9 +646,11 @@ public static class DbSeeder
             // We don't delete expired batches here to avoid FK conflicts with StockMovements.
             // Our FEFO logic and UI tabs already handle filtering these out.
 
-            var totalStock = await db.IngredientBatches
+            var totalStock = (await db.IngredientBatches
                 .Where(b => b.IngredientId == ing.IngredientId && b.IsActive && b.ExpiryDate > DateTime.UtcNow)
-                .SumAsync(b => b.QuantityOnHand);
+                .Select(b => b.QuantityOnHand)
+                .ToListAsync())
+                .Sum();
 
             // If stock is low or zero, add 5000 more
             if (totalStock < 100)

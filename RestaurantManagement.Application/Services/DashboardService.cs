@@ -25,15 +25,20 @@ public sealed class DashboardService : IDashboardService
         var now = DateTime.UtcNow.Date;
         var result = new DashboardDataDto();
 
-        // 1. Fetch raw totals grouped by date for the last 365 days
+        // 1. Fetch raw totals for the last 365 days
         var cutoff = now.AddDays(-365);
-        var salesData = await _db.Sales
+        var rawSalesData = await _db.Sales
             .Where(s => s.SaleDateTime >= cutoff && s.Status != "canceled")
             .Select(s => new {
                 Date = s.SaleDateTime.Date,
-                Total = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
+                Items = s.Items.Select(i => new { i.Quantity, i.UnitPriceAtSale }).ToList()
             })
             .ToListAsync(ct);
+
+        var salesData = rawSalesData.Select(s => new {
+            s.Date,
+            Total = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
+        }).ToList();
 
         // Calculate KPI values
         result.TodaySales = salesData.Where(s => s.Date == now).Sum(s => s.Total);

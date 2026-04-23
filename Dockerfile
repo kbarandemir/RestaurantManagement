@@ -22,7 +22,7 @@ COPY . .
 
 # Build
 WORKDIR "/src/RestaurantManagement.API"
-RUN dotnet build "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "RestaurantManagement.API.csproj" -c $BUILD_CONFIGURATION -o /app/build /p:GenerateResourceWarnOnMissingSource=true
 
 # ── Publish Stage ───────────────────────────────────────────────────────────
 FROM build AS publish
