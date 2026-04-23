@@ -94,11 +94,14 @@ public sealed class MenuItemService : IMenuItemService
             .ToListAsync(ct);
 
         // 3. Get current available (active & non-expired) stock per ingredient
-        var stockPerIngredient = await _db.IngredientBatches.AsNoTracking()
+        var rawStock = await _db.IngredientBatches.AsNoTracking()
             .Where(b => b.IsActive && b.QuantityOnHand > 0 && b.ExpiryDate > DateTime.UtcNow)
+            .Select(b => new { b.IngredientId, b.QuantityOnHand })
+            .ToListAsync(ct);
+
+        var stockPerIngredient = rawStock
             .GroupBy(b => b.IngredientId)
-            .Select(g => new { IngredientId = g.Key, TotalQty = g.Sum(b => b.QuantityOnHand) })
-            .ToDictionaryAsync(x => x.IngredientId, x => x.TotalQty, ct);
+            .ToDictionary(g => g.Key, g => g.Sum(b => b.QuantityOnHand));
 
         // 4. Map to DTO and calculate availability
         var recipeLookup = activeRecipes

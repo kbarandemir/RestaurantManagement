@@ -34,56 +34,90 @@ public sealed class SaleService : ISaleService
 
     public async Task<List<SaleListItemDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var sales = await _db.Sales.AsNoTracking()
+        var salesRaw = await _db.Sales.AsNoTracking()
             .Include(s => s.Items)
                 .ThenInclude(i => i.MenuItem)
             .OrderByDescending(s => s.SaleDateTime)
-            .Select(s => new SaleListItemDto
+            .Select(s => new 
             {
-                SaleId = s.SaleId,
-                SaleDateTime = s.SaleDateTime,
-                Status = s.Status,
-                TableNo = s.TableNo,
-                CreatedByUserId = s.CreatedByUserId,
-                ItemCount = s.Items.Count,
-                TotalAmount = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale),
-                Items = s.Items.Select(i => new SaleItemDto
-                {
-                    SaleItemId = i.SaleItemId,
-                    MenuItemId = i.MenuItemId,
+                s.SaleId,
+                s.SaleDateTime,
+                s.Status,
+                s.TableNo,
+                s.CreatedByUserId,
+                Items = s.Items.Select(i => new {
+                    i.SaleItemId,
+                    i.MenuItemId,
                     MenuItemName = i.MenuItem.Name,
-                    Quantity = i.Quantity,
-                    UnitPriceAtSale = i.UnitPriceAtSale
+                    i.Quantity,
+                    i.UnitPriceAtSale
                 }).ToList()
             })
             .ToListAsync(ct);
+            
+        var sales = salesRaw.Select(s => new SaleListItemDto
+        {
+            SaleId = s.SaleId,
+            SaleDateTime = s.SaleDateTime,
+            Status = s.Status,
+            TableNo = s.TableNo,
+            CreatedByUserId = s.CreatedByUserId,
+            ItemCount = s.Items.Count,
+            TotalAmount = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale),
+            Items = s.Items.Select(i => new SaleItemDto
+            {
+                SaleItemId = i.SaleItemId,
+                MenuItemId = i.MenuItemId,
+                MenuItemName = i.MenuItemName,
+                Quantity = i.Quantity,
+                UnitPriceAtSale = i.UnitPriceAtSale
+            }).ToList()
+        }).ToList();
             
         return sales;
     }
 
     public async Task<SaleDetailDto?> GetByIdAsync(int saleId, CancellationToken ct = default)
     {
-        var sale = await _db.Sales.AsNoTracking()
+        var saleRaw = await _db.Sales.AsNoTracking()
             .Include(s => s.Items)
                 .ThenInclude(i => i.MenuItem)
             .Where(s => s.SaleId == saleId)
-            .Select(s => new SaleDetailDto(
+            .Select(s => new 
+            {
                 s.SaleId,
                 s.SaleDateTime,
                 s.Status,
                 s.TableNo,
                 s.CreatedByUserId,
-                s.Items.Select(i => new SaleItemDto
-                {
-                    SaleItemId = i.SaleItemId,
-                    MenuItemId = i.MenuItemId,
+                Items = s.Items.Select(i => new {
+                    i.SaleItemId,
+                    i.MenuItemId,
                     MenuItemName = i.MenuItem.Name,
-                    Quantity = i.Quantity,
-                    UnitPriceAtSale = i.UnitPriceAtSale
-                }).ToList(),
-                s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
-            ))
+                    i.Quantity,
+                    i.UnitPriceAtSale
+                }).ToList()
+            })
             .FirstOrDefaultAsync(ct);
+
+        if (saleRaw == null) return null;
+
+        var sale = new SaleDetailDto(
+            saleRaw.SaleId,
+            saleRaw.SaleDateTime,
+            saleRaw.Status,
+            saleRaw.TableNo,
+            saleRaw.CreatedByUserId,
+            saleRaw.Items.Select(i => new SaleItemDto
+            {
+                SaleItemId = i.SaleItemId,
+                MenuItemId = i.MenuItemId,
+                MenuItemName = i.MenuItemName,
+                Quantity = i.Quantity,
+                UnitPriceAtSale = i.UnitPriceAtSale
+            }).ToList(),
+            saleRaw.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
+        );
 
         return sale;
     }

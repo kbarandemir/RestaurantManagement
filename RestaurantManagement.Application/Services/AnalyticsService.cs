@@ -31,18 +31,26 @@ public sealed class AnalyticsService : IAnalyticsService
         var result = new AnalyticsDataDto();
 
         // ── 1. Product Performance ────────────────────────────────────────
-        var itemRows = await _db.SaleItems
+        var rawItems = await _db.SaleItems
             .Where(si => si.Sale.SaleDateTime >= cutoff && si.Sale.Status != "canceled")
-            .GroupBy(si => si.MenuItem.Name)
+            .Select(si => new { 
+                Name = si.MenuItem.Name, 
+                Quantity = si.Quantity, 
+                UnitPrice = si.UnitPriceAtSale 
+            })
+            .ToListAsync(ct);
+
+        var itemRows = rawItems
+            .GroupBy(x => x.Name)
             .Select(g => new
             {
                 Name = g.Key,
-                Revenue = g.Sum(x => x.Quantity * x.UnitPriceAtSale),
+                Revenue = g.Sum(x => x.Quantity * x.UnitPrice),
                 Orders = g.Sum(x => x.Quantity)
             })
             .OrderByDescending(x => x.Revenue)
             .Take(10)
-            .ToListAsync(ct);
+            .ToList();
 
         // Deterministic margin seeded from name hash
         result.Products = itemRows.Select(p => new ProductPerformanceDto
@@ -54,19 +62,30 @@ public sealed class AnalyticsService : IAnalyticsService
         }).ToList();
 
         // ── 2. Staff Performance ──────────────────────────────────────────
-        var staffRows = await _db.Sales
+        var rawStaffSales = await _db.Sales
             .Where(s => s.SaleDateTime >= cutoff && s.Status != "canceled" && s.CreatedByUserId != null)
-            .GroupBy(s => new { s.CreatedByUserId, s.CreatedByUser!.FirstName, s.CreatedByUser.LastName })
+            .Include(s => s.Items)
+            .Include(s => s.CreatedByUser)
+            .ToListAsync(ct);
+
+        var staffRows = rawStaffSales
+            .Select(s => new {
+                UserId = s.CreatedByUserId ?? 0,
+                FirstName = s.CreatedByUser!.FirstName,
+                LastName = s.CreatedByUser.LastName,
+                TotalRevenue = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
+            })
+            .GroupBy(s => new { s.UserId, s.FirstName, s.LastName })
             .Select(g => new
             {
                 Name = g.Key.FirstName + " " + g.Key.LastName,
-                UserId = g.Key.CreatedByUserId ?? 0,
+                UserId = g.Key.UserId,
                 Tables = g.Count(),
-                Revenue = g.Sum(s => s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale))
+                Revenue = g.Sum(s => s.TotalRevenue)
             })
             .OrderByDescending(x => x.Revenue)
             .Take(8)
-            .ToListAsync(ct);
+            .ToList();
 
         // Deterministic rating from user ID hash
         result.Staff = staffRows.Select(s => new StaffPerformanceDto
@@ -78,18 +97,20 @@ public sealed class AnalyticsService : IAnalyticsService
         }).ToList();
 
         // ── 3. Hourly Revenue ─────────────────────────────────────────────
-        // Aggregate from the same period — group by hour-of-day, average across days
         var hourlyRaw = await _db.Sales
             .Where(s => s.SaleDateTime >= cutoff && s.Status != "canceled")
-            .Select(s => new
-            {
+            .Include(s => s.Items)
+            .ToListAsync(ct);
+
+        var hourlyProcessed = hourlyRaw
+            .Select(s => new {
                 Hour = s.SaleDateTime.Hour,
                 Total = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
             })
-            .ToListAsync(ct);
+            .ToList();
 
         var totalDays = Math.Max(1, (now - cutoff).Days);
-        var hourlyGrouped = hourlyRaw
+        var hourlyGrouped = hourlyProcessed
             .GroupBy(x => x.Hour)
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Total));
 
@@ -104,17 +125,20 @@ public sealed class AnalyticsService : IAnalyticsService
         }
 
         // ── 4. Revenue Forecast ───────────────────────────────────────────
-        // Actual monthly data for past 6 months, forecast extrapolation for next 3
         var sixMonthsAgo = new DateTime(now.Year, now.Month, 1).AddMonths(-5);
-        var monthlyActual = await _db.Sales
+        var monthlyActualRaw = await _db.Sales
             .Where(s => s.SaleDateTime >= sixMonthsAgo && s.Status != "canceled")
+            .Include(s => s.Items)
+            .ToListAsync(ct);
+
+        var monthlyActual = monthlyActualRaw
             .Select(s => new
             {
                 Year = s.SaleDateTime.Year,
                 Month = s.SaleDateTime.Month,
                 Total = s.Items.Sum(i => i.Quantity * i.UnitPriceAtSale)
             })
-            .ToListAsync(ct);
+            .ToList();
 
         var monthlyGrouped = monthlyActual
             .GroupBy(x => new { x.Year, x.Month })
