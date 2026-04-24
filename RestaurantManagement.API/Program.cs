@@ -25,8 +25,8 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── CORS Configuration ──────────────────────────────────────────────────────
-// Allow the React frontend (Vite dev server) to make cross-origin API requests
-var allowedOrigin = "http://localhost:5173";
+// Allow the React frontend (Vite dev server or Production Vercel URL)
+var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:5173";
 
 // ── JWT Configuration ───────────────────────────────────────────────────────
 // Read signing key, issuer, and audience from appsettings.json
