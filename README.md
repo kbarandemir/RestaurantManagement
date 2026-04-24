@@ -89,18 +89,6 @@ npm run dev
 
 ---
 
-## 📸 Screenshots
-
-| Dashboard Analytics | POS Interface |
-| :---: | :---: |
-| *(Insert Screenshot Here)* | *(Insert Screenshot Here)* |
-
-| FEFO Inventory Batches | Roster Scheduling |
-| :---: | :---: |
-| *(Insert Screenshot Here)* | *(Insert Screenshot Here)* |
-
----
-
 ## 👨‍💻 Contributing & Future Roadmap
 If adapting this project for larger, multi-chain operations, consider executing the following roadmap:
 1. **Implement xUnit Coverage:** Ensure Application logic holds solid test coverage before scaling.
