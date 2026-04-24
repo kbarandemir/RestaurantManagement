@@ -2,20 +2,25 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Tüm .csproj dosyalarını kopyala ve restore et
+# Proje dosyalarını kopyala
 COPY ["RestaurantManagement.API/RestaurantManagement.API.csproj", "RestaurantManagement.API/"]
 COPY ["RestaurantManagement.Application/RestaurantManagement.Application.csproj", "RestaurantManagement.Application/"]
 COPY ["RestaurantManagement.Domain/RestaurantManagement.Domain.csproj", "RestaurantManagement.Domain/"]
 COPY ["RestaurantManagement.Infrastructure/RestaurantManagement.Infrastructure.csproj", "RestaurantManagement.Infrastructure/"]
 
+# Bağımlılıkları geri yükle
 RUN dotnet restore "RestaurantManagement.API/RestaurantManagement.API.csproj"
 
 # Tüm kaynak kodunu kopyala
 COPY . .
 
+# Varsa kalıntıları temizle (CS2021 hatasını önlemek için)
+RUN find . -type d -name "bin" -exec rm -rf {} +
+RUN find . -type d -name "obj" -exec rm -rf {} +
+
 # API projesini derle
 WORKDIR "/src/RestaurantManagement.API"
-RUN dotnet build "RestaurantManagement.API.csproj" -c Release -o /app/build /p:GenerateResourceWarnOnMissingSource=true
+RUN dotnet build "RestaurantManagement.API.csproj" -c Release -o /app/build
 
 # Publish Stage
 FROM build AS publish
