@@ -25,8 +25,9 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── CORS Configuration ──────────────────────────────────────────────────────
-// Allow the React frontend (Vite dev server or Production Vercel URL)
-var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:5173";
+// Allow multiple origins (comma-separated list)
+var allowedOriginSettings = builder.Configuration["Cors:AllowedOrigin"] ?? "http://localhost:5173";
+var allowedOrigins = allowedOriginSettings.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
 // ── JWT Configuration ───────────────────────────────────────────────────────
 // Read signing key, issuer, and audience from appsettings.json
@@ -110,7 +111,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendCors", policy =>
     {
-        policy.WithOrigins(allowedOrigin)
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
